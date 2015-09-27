@@ -1,0 +1,8 @@
+.editorconfig
+.jscsrc
+.project
+.pydevproject
+.travis.yml
+archive
+otherDefaults
+.jshintrc
