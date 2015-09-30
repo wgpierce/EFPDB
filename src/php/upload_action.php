@@ -46,13 +46,14 @@
 				
 				if($file_exists) {
 					//link to webpage
+					/*
 					echo "<form action=\"mol_page.php\" method=\"POST\" enctype=\"multipart/form-data\">
 								$file_name = $return_array[0]
 								<p>This file already exists at <p> <a href=\" . $return_array[0] . ">this location</a>."
 								type=submit, name=submit;
 					
 								";
-					
+					*/
 					
 				} else {
 					if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $target_file)) {
