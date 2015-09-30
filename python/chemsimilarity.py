@@ -67,8 +67,9 @@ def xyz_to_gmsinp(XYZFile):
 	g = open(XYZFile, 'r')
 	lines = g.readlines()
 	randvar = str(random.randint(0,1000000))
+	
 	#redirect from the PHP files to website local filesystems
-	gamess_input = 'C:\\WebDev\\www\\EFPDB\\src\\database\\inp_files\\' + os.path.basename(XYZFile) + '.' + randvar + '.inp'
+	gamess_input =  'C:\\WebDev\\www\\EFPDB\\src\\database\\inp_files\\' + os.path.splitext(os.path.basename(XYZFile))[0] + randvar + '.inp'
 	f = open(gamess_input, 'w')
 	cc = []
 	for line in lines[2:]:
@@ -102,7 +103,7 @@ def xyz_to_gmsinp(XYZFile):
 	f.write(' $end\n')
 	g.close()
 	f.close()
-	return gamess_input
+	return os.path.basename(gamess_input)
 	
 #def main(XYZFile):
 #	return 0

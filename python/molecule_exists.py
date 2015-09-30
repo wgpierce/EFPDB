@@ -25,9 +25,6 @@ def main(file_name, dbname):
 		return
 	else:
 	#File does not exist
-		gamess_input = xyz_to_gmsinp(file_name)	
-	#This is where they stopped
-		print gamess_input
 		print False
 		return
 	

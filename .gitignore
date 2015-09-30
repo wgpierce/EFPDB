@@ -6,3 +6,5 @@
 archive
 otherDefaults
 .jshintrc
+otherFiles
+src/database

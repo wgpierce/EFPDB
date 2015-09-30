@@ -36,15 +36,16 @@
 				
 			if($uploadOk) {
 				//check to make sure it is actually a valid file
+				//TODO: Make validity checks more robust
 				
+				 
 				//Compare to previous files
-				echo basename($_FILES['fileToUpload']['tmp_name']) . "<br />";
+				//echo basename($_FILES['fileToUpload']['tmp_name']) . "<br />";
 				$tmp_file = $_FILES['fileToUpload']['tmp_name'];
-				$file_exists = exec("python ../python/searchstring.py " . escapeshellarg($tmp_file), $return_array);
+				$file_exists = exec("python ../python/molecule_exists.py " . escapeshellarg($tmp_file), $return_array);
 				
 				//$return_array[0] is where the file already exists or to be executed is
-				
-				if($file_exists) {
+				if($file_exists == "True") {
 					//link to webpage
 					/*
 					echo "<form action=\"mol_page.php\" method=\"POST\" enctype=\"multipart/form-data\">
@@ -54,35 +55,20 @@
 					
 								";
 					*/
-					
-				} else {
+				} else if ($file_exists == "False"){
 					if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $target_file)) {
-				        echo "The file ". basename($_FILES['fileToUpload']['name']). " has been uploaded.<br />";
-				        echo "Now running GAMESS on this file...<br />";
+						//Everthing has succeeded, we allow user to calculate now
 						
+						//Create inp file since it has been uploaded
+						$gamess_input = exec("python ../python/create_inp.py " . escapeshellarg($target_file));
+						//This is already a basename
 						
-						//execute GAMESS
-						//exec()
-				        $uploaded_file = $target_file;
+				        echo "The file ". basename($target_file) . " has been uploaded.<br />";
+						echo "Press the link below to submit your file to be processed by GAMESS<br />";
 						
-						echo("GAMESS " . $return_array[0]);
-			
-								//create dynamic webpage and display results
-					
-					
-						// script to .inp file
-						// not in DB - compute similarity in python
-						// run qsub job on this file - in the backend - export to supercomputer later
-						
-						//create dynamic webpage for displaying current job
-						
-						//create download file and output 
-											
-						//echo "You can view your job\'s progress at <a href=\"$resultpage\">this page<\a>";
-						
-				        //echo "Your results will be available at <a href=\"$download_page\">this page<\a>";
-				    	
-				    	
+						#We pass variables by GET to allow multiuser access
+						echo "<a href = \"GAMESS_running.php?gamess_input=$gamess_input\" style=\"font-size: 3em\">
+									Calculate EFP!<a><br />";	    	
 					 } else {
 			        echo "Sorry, this file doesn't exist, but there was a problem uploading your file";
 			    	}
