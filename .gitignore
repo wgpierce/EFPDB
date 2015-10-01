@@ -8,3 +8,6 @@ otherDefaults
 .jshintrc
 otherFiles
 src/database
+
+browserconfig.xml
+crossdomain.xml
