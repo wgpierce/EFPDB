@@ -14,7 +14,7 @@
 			$uploadOk = 1;
 			
 			$target_file = $target_dir . basename($_FILES['fileToUpload']['name']);
-			
+
 			//Get the upload file information
 			$fileinfo = pathinfo($target_file);
 			
@@ -40,21 +40,22 @@
 				
 				 
 				//Compare to previous files
-				//echo basename($_FILES['fileToUpload']['tmp_name']) . "<br />";
+				//Compare to temp file since not uploaded yet
 				$tmp_file = $_FILES['fileToUpload']['tmp_name'];
 				$file_exists = exec("python ../python/molecule_exists.py " . escapeshellarg($tmp_file), $return_array);
 				
+				/*
+				echo $file_exists;
+				for ($i = 0; $i < count($return_array); $i++) {
+					echo $return_array[$i] . "<br />";
+				}
+				*/
+				
 				//$return_array[0] is where the file already exists or to be executed is
 				if($file_exists == "True") {
-					//link to webpage
-					/*
-					echo "<form action=\"mol_page.php\" method=\"POST\" enctype=\"multipart/form-data\">
-								$file_name = $return_array[0]
-								<p>This file already exists at <p> <a href=\" . $return_array[0] . ">this location</a>."
-								type=submit, name=submit;
-					
-								";
-					*/
+					$existing_file_name = basename($_FILES['fileToUpload']['name'], ".xyz") . ".efp";
+					echo "This file already exists <a href=\"../database/efp_files/$existing_file_name\">here!</a>";
+										
 				} else if ($file_exists == "False"){
 					if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $target_file)) {
 						//Everthing has succeeded, we allow user to calculate now

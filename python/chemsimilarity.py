@@ -56,10 +56,9 @@ def file_exists(string, databasefile):
 		kk = re.sub('\t+',' ',line)
 		jj = kk.split(' ')
 		ddd.append(jj)
+	inputdb.close();
 	for i in xrange(len(ddd)):
 		if ddd[i][1] == string:
-			#need to return file location - 
-
 			return True
 	return False
 

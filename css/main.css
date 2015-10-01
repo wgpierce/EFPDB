@@ -164,6 +164,9 @@ table, th, td {
     border-collapse:collapse;
 }
 
+td {
+		text-align: center;
+}
 a {
 	color: lightgrey;
 	text-decoration:none;

@@ -16,9 +16,10 @@
 			if(!$fileinfo->isDot()) {
 				//var_dump($fileinfo->getFileName());
 				//create a table element
+				//$file_contents = file_get_contents($data_dir.$fileinfo) 
 				echo "<tr>
 							<td>" .	
-							 $file_contents = file_get_contents($data_dir.$fileinfo) .
+							 "<a href=\"$data_dir/$fileinfo\">$fileinfo</a>" .
 							 //Iterate through this and file info we need
 							"</td>
 					 </tr>";
