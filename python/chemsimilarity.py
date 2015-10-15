@@ -19,7 +19,7 @@ def stringprint(XYZFile):
 		inputXYZ=open(XYZFile,'r')
 	except IOError:
 		sys.stderr.write('Failed to open the files')
-		return 0
+		return 1
 	a = []
 	b = 0
 	c = ''
@@ -68,7 +68,8 @@ def xyz_to_gmsinp(XYZFile):
 	randvar = str(random.randint(0,1000000))
 	
 	#redirect from the PHP files to website local filesystems
-	gamess_input =  'C:\\WebDev\\www\\EFPDB\\src\\database\\inp_files\\' + os.path.splitext(os.path.basename(XYZFile))[0] + randvar + '.inp'
+    #'/var/www/html/EFPDB/database/inp_files/' 
+	gamess_input =  '../database/inp_files/' + os.path.splitext(os.path.basename(XYZFile))[0] + randvar + '.inp'
 	f = open(gamess_input, 'w')
 	cc = []
 	for line in lines[2:]:

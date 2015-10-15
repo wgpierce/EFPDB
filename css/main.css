@@ -168,7 +168,7 @@ td {
 		text-align: center;
 }
 a {
-	color: lightgrey;
+	color: #C0C0C0;
 	text-decoration:none;
 }
 
@@ -179,7 +179,8 @@ a:visited {
 }
 	
 a:hover {
-		text-decoration: underline;
+		/*text-decoration: underline; 
+		color: green;*/
 }
 
 

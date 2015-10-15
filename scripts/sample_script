@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#set INPFILE=$argv[1]
+echo $0
+echo $1
+
+STRING="meow"
+TW=wow
+
+echo $STRING
+echo $TW
+
+touch meow.script
+
+echo '#~/bin/bash' dafdsa
+
+#if statement
+#if [[ "$T" "$TW"]]; then
+#	echo expression true
+#else 
+#	echo expression false
+#fi
+
+
+#for loop
+for i in `seq 1 10`;
+do
+	echo $i;
+done
+
+function e {
+	echo $1
+}
+
+e Hello!
+echo hello!!!!!!
+echo $INPFILE

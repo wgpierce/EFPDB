@@ -10,6 +10,7 @@
 			<th>Other Attributes</th>
 		</tr>
 	<?php
+	//TODO:Redo this to iterature through the database
 		$data_dir = "../database/efp_files/";
 		$dir = new DirectoryIterator($data_dir);
 		foreach ($dir as $fileinfo) {

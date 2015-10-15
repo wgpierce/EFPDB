@@ -7,19 +7,37 @@
 	<p>
 	<?php
 		echo "Now running GAMESS on this file...<br />";
-		if(file_exists("C:\\WebDev\\www\\EFPDB\\src\\database\\inp_files\\" . $_GET['gamess_input'])) {
+		if(file_exists("../database/inp_files/" . $_GET['gamess_input'])) {
+			//var/www/html/EFPDB/database/inp_files/"
+			$gamess_input = $_GET['gamess_input'];
 			//TODO: implement GAMESS interfacing here	
 			//If there is currently a process running	
-			if (TRUE) {
+			if (FALSE) {
 				$calculated_file = 7;
 				echo "This process has already been completed! <br >";
-				echo "View the results for this file <a href=\"..\database\efp_files\$calculated_file> here</a><br />";
+				echo "View the results for this file <a href= \"../database/efp_files/$calculated_file> here</a><br />";
 			} else {
 				//create the process
-				$command = "meow" . "meow_param";
+				//$command = "./../script/submissionscript $gamess_input";
 				exec($command);
 				
-				//TODO:  once done, needs to update database
+				
+				
+				//Database queries
+				$mysql_query = "UPDATE main
+								SET Fragment=''
+								where ";
+				$conn = mysqli_connect(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), 
+										getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'))
+					or die("Could not connect" . mysql_error());
+				$file_added = mysqli_query($conn, $mysql_query);
+					//or die(mysqli_error() . "The query was:" . $mol_exists_query);
+				
+				 
+				$mysql_query = "";
+				$file_name = mysqli_query($conn, $mysql_query);
+				mysql_close($conn);
+				
 			}
 			
 		} else {
