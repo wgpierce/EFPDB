@@ -80,9 +80,14 @@ def xyz_to_gmsinp(XYZFile):
 		line = re.sub('H','H 1.0',line)
 		line = re.sub('N','N 7.0',line)
 		line = re.sub('O','O 8.0',line)
+		line = re.sub('F','F 9.0',line)
 #TODO: Add in all the atoms?
 		line = line.split(' ')
 		cc.append(line)
+		
+		
+		'''TODO: implement Pradeep's method of parameters'''
+		
 	f.write(' $contrl units=angs local=ruednbrg runtyp=makefp \n')
 	f.write('       mult=1 icharg=0  coord=cart icut=11\n')
 	f.write('       maxit=180 $end\n')
@@ -97,9 +102,10 @@ def xyz_to_gmsinp(XYZFile):
 	f.write(' comment_field\n')
 	f.write(' C1\n')
 	for i in xrange(len(cc)):
-		for j in xrange(5):
+		for j in xrange(6):
 			f.write(' ')
 			f.write(cc[i][j])
+# 			f.write('\n')
 	f.write(' $end\n')
 	g.close()
 	f.close()
