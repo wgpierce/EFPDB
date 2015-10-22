@@ -4,8 +4,32 @@
 <?php
 $action = "CREATE TABLE MyTable(Occurence INT(128), Decription TEXT, 
 		   Molecule VARCHAR, Geometry TEXT, Fragment TEXT),
-		   Parameter1 VARCHAR(128)";
+		   ";
 //ALREADY RUN, NEVER NEED TO RUN THIS AGAIN
+  //. "AND WHERE Parameter1=param";
+/*Other commands
+= "DELETE FROM main
+	where description='something unwanted'";
+= "UPDATE main 
+   SET column1=value1, column2=value2
+   where some_column=some_value"   //careful, can accidentallly update entire database
+= "INSERT INTO main
+   (column1, column2, columnn)
+   VALUES (value1, vlaue2, valuen)"//add specific values
+ */
+
+ /*
+$conn = mysqli_connect(ini_get("mysql.default.host"),
+ini_get("mysql.default.user"),
+ini_get("mysql.default.password"),
+ini_get("mysql.default.database"))*/
+
+//echo $_ENV['MYSQL_USER'] . "<br>";   //doesn't work..
+/*
+echo getenv('MYSQL_USER') . "<br>";
+echo getenv('MYSQL_HOST') . "<br>";
+echo getenv('MYSQL_PASSWORD') . "<br>";
+*/
 
 
 $conn = mysqli_connect($host, $user, $password);

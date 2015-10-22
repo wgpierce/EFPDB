@@ -10,14 +10,19 @@
 		if(file_exists("../database/inp_files/" . $_GET['gamess_input'])) {
 			//var/www/html/EFPDB/database/inp_files/"
 			$gamess_input = $_GET['gamess_input'];
-			//TODO: implement GAMESS interfacing here	
+			
+				
 			//If there is currently a process running	
+			//run command line arguments with exec
+			exec();
+			
 			if (FALSE) {
 				$calculated_file = 7;
 				echo "This process has already been completed! <br >";
-				echo "View the results for this file <a href= \"../database/efp_files/$calculated_file> here</a><br />";
+				echo "View the results for this file <a href= \"../database/efp_files/$calculated_file>here</a><br />";
 			} else {
-				//create the process
+				
+				//create the process - this is it
 				//$command = "./../script/submissionscript $gamess_input";
 				exec($command);
 				

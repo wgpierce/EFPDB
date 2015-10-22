@@ -1,8 +1,12 @@
 #!/bin/bash
 
-#set INPFILE=$argv[1]
+set INPFILE=$argv[1]
+
+#  $? hold exit status of last executed commmand
+#   $1 is first command line argument
+
 echo $0
-echo $1
+echo $INPFILE
 
 STRING="meow"
 TW=wow
@@ -15,11 +19,11 @@ touch meow.script
 echo '#~/bin/bash' dafdsa
 
 #if statement
-#if [[ "$T" "$TW"]]; then
-#	echo expression true
-#else 
-#	echo expression false
-#fi
+if [ $STRING!=$TW ]; then
+	echo true
+else 
+	echo false
+fi
 
 
 #for loop

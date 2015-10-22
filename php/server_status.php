@@ -7,7 +7,10 @@
 	<p>
 
     <?php
-    
+    $command = "../scripts/serverstatus";
+    exec($command, $return_array);
+	
+	//format return array as requested
 
 
     ?>

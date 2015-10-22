@@ -18,34 +18,35 @@
 			//Input parameters to be passed to EFPDB	
 			$input_charge = intval($_POST['charge']);	//Defaults to 0 if nothing set
 			
-			$input_polarization = FALSE;
-			$input_dispersion = FALSE;
-			$input_exrep = FALSE;
-			$input_charge_transfer = FALSE;
+			$input_polarization = 0;
+			$input_dispersion = 0;
+			$input_exrep = 0;
+			$input_charge_transfer = 0;
 			$input_description = $_POST['descrip'];
 			
 			if (isset($_POST['polarization'])) {
-				$input_polarization = TRUE;
+				$input_polarization = 1;
 			}
 			if (isset($_POST['dispersion'])) {
-				$input_dispersion = TRUE;
+				$input_dispersion = 1;
 			}
 			if (isset($_POST['exrep'])) {
-				$input_exrep = TRUE;
+				$input_exrep = 1;
 			}
 			if (isset($_POST['charge_transfer'])) {
-				$input_charge_transfer = TRUE;
+				$input_charge_transfer = 1;
 			}
 			
-			/* //value checking prints
-			echo $input_charge ."<br>";
-			echo $input_polarization ."<br>";
-			echo $input_dispersion ."<br>";
-			echo $input_exrep ."<br>";
-			echo $input_charge_transfer ."<br>";
-			echo $fileinfo['extension'] . "<br>";
-			echo $input_description;
-			*/
+			/*
+			 //value checking prints
+			echo "input charge: $input_charge <br>";
+			echo "input_polarization $input_polarization <br>";
+			echo "input dispersion: $input_dispersion <br>";
+			echo "input_dipsersion: $input_exrep <br>";
+			echo "input_charge_transfer: $input_charge_transfer <br>";
+			echo "extension: " . $fileinfo['extension'] . "<br>";
+			echo "input_description: $input_description<br>";
+			/**/
 			
 			// Check if file size is less than 20MB
 			if ($_FILES['fileToUpload']['size'] > 20000000) {
@@ -64,13 +65,14 @@
 			//Now ensure that it is a proper file by obtaining its chemical formula
 			$tmp_file = $_FILES['fileToUpload']['tmp_name'];
 			//echo $tmp_file;
-			$return_array = array();
+			$return_array;
 			$chem_formula = exec("python ../python/create_formula.py " . escapeshellarg($tmp_file), $return_array);
-			$chem_formula = $return_array[0]; //temp fix
+			//$chem_formula = $return_array[0]; //temp fix
 			//echo "Chemical Formula is: " . $chem_formula . "<br>";
-			//check to see that we actually have a chemical formula
+			//check to see that we actually have a chemical formula / is nonzero
+			//if $chem_formula is 0, then all database entries will be returned - prevented above
 			if (!$chem_formula) {
-				echo "The file <br \>".basename($_FILES['fileToUpload']['name'])."<br />is not a valid 
+				echo "The file <br \>".basename($_FILES['fileToUpload']['name'])." is not a valid 
 						.xyz-formatted file<br>";
 				echo "<br>Nice try, hackers<br>";
 				$uploadOk = 0;
@@ -88,52 +90,44 @@
 				//TODO: port python code to php
 				$file_exists = FALSE;
 				$existing_file_name = "";
+				$non_existing_occurance=0;
 				
+				//Database queries - secured with environmental variables and against injection
+				$conn = new mysqli(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), 
+										getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
+				if ($conn->connect_error) {
+					echo "failed";
+					die("Connection failed: " . $conn->connect_error);
+				}
 				
-				//if $chem_formula is 0, then all database entries will be returned
+				//Identify molecules with the same chemical structure and run the rms python script on them
+				$mysql_query = $conn->prepare("SELECT Occurance,Fragment,Geometry FROM main WHERE Molecule=?");
+				$mysql_query->bind_param('s', $chem_formula);
 				
-				
-				//Database queries - secured with environmenttal variables
-				//echo $_ENV['MYSQL_USER'] . "<br>";   //doesn't work..
-				/*
-				echo getenv('MYSQL_USER') . "<br>";
-				echo getenv('MYSQL_HOST') . "<br>";
-				echo getenv('MYSQL_PASSWORD') . "<br>";
-				*/
-				
-				$conn = mysqli_connect(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), 
-										getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'))
-				/*
-				$conn = mysqli_connect(ini_get("mysql.default.host"),
-										ini_get("mysql.default.user"),
-										ini_get("mysql.default.password"),
-										ini_get("mysql.default.database"))*/
-					or die("Could not connect" . mysql_error());
-				//TODO: implement Pradeep's method for identifying molecules
-				$mysql_query = "SELECT Fragment FROM main
-								WHERE Molecule='" . $chem_formula . "'";  //. "AND WHERE Parameter1=param";
-								/*Other commands
-								= "DELETE FROM main
-									where description='something unwanted'";
-								= "UPDATE main 
-								   SET column1=value1, column2=value2
-								   where some_column=some_value"   //careful, can accidentallly update entire database
-								= "INSERT INTO main
-								   (column1, column2, columnn)
-								   VALUES (value1, vlaue2, valuen)"//add specific values
-								 */
-				$result = mysqli_query($conn, $mysql_query);
-					//or die(mysqli_error() . "The query was:" . $mol_exists_query);
-				//get name of current file (.efp)
-				if (mysqli_num_rows($result) > 0) {
+				if($mysql_query->execute()) {
+					$mysql_query->bind_result($curr_occurance, $curr_fragment, $curr_geometry);
 					//convert results from query
-					$row = mysqli_fetch_assoc($result);
-					//echo $row['Fragment'];
-					$existing_file_name = $row['Fragment'];
-					$file_exists=TRUE;
+					while($row = $mysql_query->fetch()) {
+						//echo $curr_fragment;
+						//echo $curr_geometry;
+						$non_existing_occurance = $curr_occurance; //keep this in case we find it doens't exist at the end
+						$rmsd_similarity = exec("python ../python/rmsd.py " . escapeshellarg($tmp_file) . " ../database/xyz_files/" . $curr_geometry, $return_array);
+						//$rmsd_similarity = "5e-5";
+						if($rmsd_similarity < .5) { ///this does propery interpret e notation output
+							echo "rmsd_similarity is " . $rmsd_similarity. "<br>";
+							echo "The rmsd of ".basename($_FILES['fileToUpload']['name'])." is $rmsd_similarity to a similar geometry, given below<br>";
+							$existing_file_name = $row['Fragment'];
+							$file_exists=TRUE;		
+							break;
+						}	
+					}
+					$non_existing_occurance += 1;
+					$file_exists=FALSE;
 				} else {
+					//else the query fails, not necessarily file doesn't exist
 					$file_exists=FALSE;
 				}
+				$mysql_query->close();
 				
 				/*
 				echo "File exists: " . $file_exists . "<br>";
@@ -148,29 +142,34 @@
 				//$file_exists = TRUE;
 
 				if($file_exists) {
-					$existing_file_name = basename($_FILES['fileToUpload']['name'], ".xyz") . ".efp";
+					#$existing_file_name = basename($_FILES['fileToUpload']['name'], ".xyz") . ".efp";
 					//echo "This file already exists <a href=\"../database/efp_files/$existing_file_name\">here!</a>";
 					echo "This file already exists <a href=\"mol_info.php?select_mol=$existing_file_name\">here!</a>";
 					
 				} else if ($file_exists == FALSE){
+					//to disallow files from being names the same thing
+					$target_file = $target_dir . basename($_FILES['fileToUpload']['name'], ".xyz") . $non_existing_occurance . ".xyz";
 					if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $target_file)) {
-						//TODO: secure database so it doesn't have fll write access, possibly move off-server-directory
-						//Everthing has succeeded, we allow user to calculate now
+						//Everthing has succeeded and the file does not exist, we allow user to calculate now
 						
 						//Create inp file since it has been uploaded, TODO: translate to php
-						$gamess_input = exec("python ../python/create_inp.py " . escapeshellarg($target_file));
-						//This is already a basename
-						
+						//return is a basename, pass other args here to input	
+						$gamess_input = exec("python ../python/create_inp.py " . escapeshellarg($target_file) . " "
+												. escapeshellarg($input_charge) . " ". escapeshellarg($input_polarization) . " "
+												. escapeshellarg($input_dispersion) . " ". escapeshellarg($input_exrep) . " "
+												. escapeshellarg($input_charge_transfer), $return_array);
+
+/**/						
 						//create new database entry
-						$mysql_query = "INSERT INTO main
-								   (Occurance, Description, Molecule, Geometry) 
-								   VALUES (1, '" . $input_description . " ', '". $chem_formula . "', '" . basename($target_file) . "')";
-			  		//echo $mysql_query;
-						$result = mysqli_query($conn, $mysql_query);
-						if ($result) {
+						$mysql_query = $conn->prepare("INSERT INTO main
+								   (Occurance, Description, Molecule, Geometry, InputFile)
+								   VALUES (?, ?, ?, ?, ?)");
+						$mysql_query->bind_param('issss', $non_existing_occurance, $input_description, $chem_formula, basename($target_file), $gamess_input);
+						
+						if($mysql_query->execute()) {
 				        	echo "The file ". basename($target_file) . " has been uploaded.<br />";
 							echo "Press the link below to submit your file to be processed by GAMESS<br />";
-							//We pass variables by GET to allow multiuser access and bookmarking
+							//We pass variables by GET to allow multiuser access and bookmarking of the job
 							//other paramters passable here as well
 							echo "<a href = \"GAMESS_running.php?gamess_input=$gamess_input\" style=\"font-size: 3em\">
 									Calculate EFP!<a><br />";
@@ -178,13 +177,13 @@
 						 echo "There was trouble putting ". basename($target_file) . " into the database, but it has
 								been uploaded.<br>";
 						}
-						
+/*	*/					
 							    	
 					} else {
 			        	echo "Sorry, this file doesn't exist, but there was a problem uploading your file";
 			    	}
 				}
-				 mysql_close($conn);
+				 $conn->close();
 			} else {
 			    echo "Sorry, your file was not accepted or uploaded.<br />";
 			}

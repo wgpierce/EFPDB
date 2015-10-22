@@ -45,6 +45,7 @@ def stringprint(XYZFile):
 	inputXYZ.close()
 	return c
 
+#unused
 def file_exists(string, databasefile):
 	try:
 		inputdb=open(databasefile,'r')
@@ -62,14 +63,26 @@ def file_exists(string, databasefile):
 			return True
 	return False
 
-def xyz_to_gmsinp(XYZFile):
+def xyz_to_gms_inp(XYZFile, charge, polarization, dispersion, exrep, transfer):
 	g = open(XYZFile, 'r')
 	lines = g.readlines()
-	randvar = str(random.randint(0,1000000))
-	
+	#randvar = str(random.randint(0,1000000))
+	polarization_g = 'f';
+	dispersion_g = 'f';
+	exrep_g ='f';
+	transfer_g ='f';
+	if int(polarization):
+		polarization_g = 't'
+	if int(dispersion):
+		dispersion_g = 't'
+	if int(exrep):
+		exrep_g = 't';
+	if int(transfer):
+		transfer_g = 't'
+		
 	#redirect from the PHP files to website local filesystems
     #'/var/www/html/EFPDB/database/inp_files/' 
-	gamess_input =  '../database/inp_files/' + os.path.splitext(os.path.basename(XYZFile))[0] + randvar + '.inp'
+	gamess_input =  '../database/inp_files/' + os.path.splitext(os.path.basename(XYZFile))[0] + '.inp'
 	f = open(gamess_input, 'w')
 	cc = []
 	for line in lines[2:]:
@@ -85,11 +98,8 @@ def xyz_to_gmsinp(XYZFile):
 		line = line.split(' ')
 		cc.append(line)
 		
-		
-		'''TODO: implement Pradeep's method of parameters'''
-		
 	f.write(' $contrl units=angs local=ruednbrg runtyp=makefp \n')
-	f.write('       mult=1 icharg=0  coord=cart icut=11\n')
+	f.write('       mult=1 icharg=' + charge + '  coord=cart icut=11\n')
 	f.write('       maxit=180 $end\n')
 	f.write(' $system timlim=99999 mwords=2500 $end\n')
 	f.write(' $scf soscf=.f. dirscf=.t. diis=.t. CONV=1.0d-06\n')
@@ -97,12 +107,12 @@ def xyz_to_gmsinp(XYZFile):
 	f.write(' $basis gbasis=n31 ngauss=6 ndfunc=1\n')
 	f.write('    $end\n')
 	f.write(' $DAMP IFTTYP(1)=3,2 IFTFIX(1)=1,1 thrsh=500.0 $end\n')
-	f.write(' $MAKEFP  POL=.t. DISP=.f. CHTR=.f.  EXREP=.f. $end\n')
+	f.write(' $MAKEFP  POL=.' + polarization_g + '. DISP=.' + dispersion_g + '. CHTR=.' + transfer_g + '.  EXREP=.' + exrep_g + '. $end\n')
 	f.write(' $data\n')
 	f.write(' comment_field\n')
 	f.write(' C1\n')
 	for i in xrange(len(cc)):
-		for j in xrange(6):
+		for j in xrange(5):
 			f.write(' ')
 			f.write(cc[i][j])
 # 			f.write('\n')

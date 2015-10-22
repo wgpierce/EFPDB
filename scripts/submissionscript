@@ -1,23 +1,22 @@
 #!/bin/bash
 
-set INPFILE=$argv[1]
+INPFILE=$1
 target_file=../database/gamess/$INPFILE.script
 touch $target_file
 
-echo '#~/bin/bash' >> ../database/gamess/$INPFILE.script
+echo '#~/bin/bash' >> $target_file
 
-echo '#PBS -V'
-echo '#PBS -q batch'
-echo '#PBS -l nodes=1:ppn=16'
-echo '#PBS -l walltime=70:00:00'
+echo '#PBS -V' >> $target_file
+echo '#PBS -q batch' >> $target_file
+echo '#PBS -l nodes=1:ppn=16' >> $target_file
+echo '#PBS -l walltime=70:00:00' >> $target_file
 echo "#PBS -r n" >> $target_file
 echo "#PBS -j oe" >> $target_file
 echo "#PBS -o $INPFILE.stdout" >> $target_file
 echo "#PBS -q batch" >> $target_file
-echo chdir `pwd` >> $target_file
 
-echo "/software/gamess/rungms $INPFILE 00 1 >& $INPFILE.log" >> ~/scr/$JOB.script
+echo "/software/gamess/rungms ../database/inp_file/$INPFILE 00 1 >& $INPFILE.log" >> $target_file
 
 echo "Submitting GAMESS job $INPFILE ..."
 
-qsub $target_file
+#qsub $target_file
