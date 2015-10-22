@@ -62,7 +62,7 @@
 			}
 			//Note $_FILES['fileToUpload']['name'] isn't actually a file
 			
-			//Now ensure that it is a proper file by obtaining its chemical formula
+			//Now ensure that it is a proper .xyz file by obtaining its chemical formula
 			$tmp_file = $_FILES['fileToUpload']['tmp_name'];
 			//echo $tmp_file;
 			$return_array;
@@ -96,35 +96,36 @@
 				$conn = new mysqli(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), 
 										getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
 				if ($conn->connect_error) {
-					echo "failed";
+					echo "Failed connection with database";
 					die("Connection failed: " . $conn->connect_error);
 				}
 				
 				//Identify molecules with the same chemical structure and run the rms python script on them
-				$mysql_query = $conn->prepare("SELECT Occurance,Fragment,Geometry FROM main WHERE Molecule=?");
+				$mysql_query = $conn->prepare("SELECT Occurance,Geometry,InputFile FROM main WHERE Molecule=?");
 				$mysql_query->bind_param('s', $chem_formula);
 				
 				if($mysql_query->execute()) {
-					$mysql_query->bind_result($curr_occurance, $curr_fragment, $curr_geometry);
+					$mysql_query->bind_result($curr_occurance, $curr_geometry, $curr_inp_file);
 					//convert results from query
 					while($row = $mysql_query->fetch()) {
 						//echo $curr_fragment;
 						//echo $curr_geometry;
-						$non_existing_occurance = $curr_occurance; //keep this in case we find it doens't exist at the end
+						$non_existing_occurance = $curr_occurance; //keep this in case we find it doesn't exist at the end
 						$rmsd_similarity = exec("python ../python/rmsd.py " . escapeshellarg($tmp_file) . " ../database/xyz_files/" . $curr_geometry, $return_array);
 						//$rmsd_similarity = "5e-5";
-						if($rmsd_similarity < .5) { ///this does propery interpret e notation output
-							echo "rmsd_similarity is " . $rmsd_similarity. "<br>";
-							echo "The rmsd of ".basename($_FILES['fileToUpload']['name'])." is $rmsd_similarity to a similar geometry, given below<br>";
-							$existing_file_name = $row['Fragment'];
+						if($rmsd_similarity < .5) { ///this does properly interpret e notation output
+							echo "The RMSD similarity of ".basename($_FILES['fileToUpload']['name'])." is $rmsd_similarity to a similar geometry, given below<br>";
+							$existing_inp_name = $curr_inp_file;
 							$file_exists=TRUE;		
 							break;
-						}	
+						}
+						$file_exists=FALSE;	
 					}
 					$non_existing_occurance += 1;
-					$file_exists=FALSE;
+					
 				} else {
 					//else the query fails, not necessarily file doesn't exist
+					echo "Failed query with database";
 					$file_exists=FALSE;
 				}
 				$mysql_query->close();
@@ -144,7 +145,7 @@
 				if($file_exists) {
 					#$existing_file_name = basename($_FILES['fileToUpload']['name'], ".xyz") . ".efp";
 					//echo "This file already exists <a href=\"../database/efp_files/$existing_file_name\">here!</a>";
-					echo "This file already exists <a href=\"mol_info.php?select_mol=$existing_file_name\">here!</a>";
+					echo "This file already exists <a href=\"mol_info.php?select_mol=$existing_inp_name\">here!</a>";
 					
 				} else if ($file_exists == FALSE){
 					//to disallow files from being names the same thing
@@ -162,16 +163,17 @@
 /**/						
 						//create new database entry
 						$mysql_query = $conn->prepare("INSERT INTO main
-								   (Occurance, Description, Molecule, Geometry, InputFile)
-								   VALUES (?, ?, ?, ?, ?)");
-						$mysql_query->bind_param('issss', $non_existing_occurance, $input_description, $chem_formula, basename($target_file), $gamess_input);
+								   (Occurance, Description, Molecule, Geometry, InputFile, isRunning)
+								   VALUES (?, ?, ?, ?, ?, ?)");
+						$is_runnning = '0';
+						$mysql_query->bind_param('isssss', $non_existing_occurance, $input_description, $chem_formula, basename($target_file), $gamess_input, $is_runnning);
 						
 						if($mysql_query->execute()) {
 				        	echo "The file ". basename($target_file) . " has been uploaded.<br />";
 							echo "Press the link below to submit your file to be processed by GAMESS<br />";
 							//We pass variables by GET to allow multiuser access and bookmarking of the job
 							//other paramters passable here as well
-							echo "<a href = \"GAMESS_running.php?gamess_input=$gamess_input\" style=\"font-size: 3em\">
+							echo "<a href = \"run_GAMESS.php?gamess_input=$gamess_input\" style=\"font-size: 3em\">
 									Calculate EFP!<a><br />";
 						} else {
 						 echo "There was trouble putting ". basename($target_file) . " into the database, but it has

@@ -1,5 +1,5 @@
  $contrl units=angs local=ruednbrg runtyp=makefp 
-       mult=1 icharg=2  coord=cart icut=11
+       mult=1 icharg=18  coord=cart icut=11
        maxit=180 $end
  $system timlim=99999 mwords=2500 $end
  $scf soscf=.f. dirscf=.t. diis=.t. CONV=1.0d-06
@@ -7,7 +7,7 @@
  $basis gbasis=n31 ngauss=6 ndfunc=1
     $end
  $DAMP IFTTYP(1)=3,2 IFTFIX(1)=1,1 thrsh=500.0 $end
- $MAKEFP  POL=.f. DISP=.t. CHTR=.t.  EXREP=.f. $end
+ $MAKEFP  POL=.t. DISP=.f. CHTR=.f.  EXREP=.t. $end
  $data
  comment_field
  C1

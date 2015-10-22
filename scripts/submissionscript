@@ -1,10 +1,15 @@
 #!/bin/bash
 
 INPFILE=$1
+#don't know what environment this script runs in
 target_file=../database/gamess/$INPFILE.script
-touch $target_file
 
-echo '#~/bin/bash' >> $target_file
+#touch $target_file
+#install -m 755 dummy $target_file
+
+#overwrite any previous by the same name
+echo '#~/bin/bash' > $target_file
+chmod 755 $target_file
 
 echo '#PBS -V' >> $target_file
 echo '#PBS -q batch' >> $target_file
@@ -14,9 +19,19 @@ echo "#PBS -r n" >> $target_file
 echo "#PBS -j oe" >> $target_file
 echo "#PBS -o $INPFILE.stdout" >> $target_file
 echo "#PBS -q batch" >> $target_file
+echo "cd `pwd`" >> $target_file
+echo "cd ../database/inp_files" >>$target_file
 
-echo "/software/gamess/rungms ../database/inp_file/$INPFILE 00 1 >& $INPFILE.log" >> $target_file
 
-echo "Submitting GAMESS job $INPFILE ..."
+#echo "cd ../database/inp_files" >>$target_file   #so now we are just in the input files directory
 
-#qsub $target_file
+#What is the environment in which this executes? --assuming where $target_file is for now - changed by cd above
+#echo "/software/gamess/rungms ../inp_files/$INPFILE 00 1 >& $INPFILE.log" >> $target_file
+#echo "/software/gamess/rungms ../database/inp_files/$INPFILE 00 1 >& $INPFILE.log" >> $target_file
+echo "/software/gamess/rungms $INPFILE 00 1 >& $INPFILE.log" >> $target_file
+
+
+#echo "Submitting GAMESS job $INPFILE ..."
+
+#This will return to STDOUT the jobID created
+qsub $target_file

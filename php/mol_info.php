@@ -7,6 +7,14 @@
 	<p>
 		<?php
 			$select_mol = $_GET['select_mol'];
+			$fileinfo = pathinfo($target_file);
+			
+			//just convert the name to inp...
+			if($fileinfo['extension'] == "xyz") {
+				$select_mol = basename($_FILES['fileToUpload']['name'], ".xyz") . "inp";	
+			} else if ($fileinfo['extension'] == "efp") {
+				$select_mol = basename($_FILES['fileToUpload']['name'], ".xyz") . "inp";
+			}
 			//create fancy stuff based on that molecule
 
 			//dump database file based on it
@@ -50,8 +58,6 @@
 						echo "<td>Parameter1</td>";
 						echo "<td>".$row['Parameter1']."</td>";
 					echo "</tr>";
-				
-				
 				
 				/*Version 1 - Horizontal
 				 * 				

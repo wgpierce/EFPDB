@@ -7,15 +7,11 @@
 	<p>
 
     <?php
-    	echo "All Jobs: <br>";
-	    $command = "qstat -anl batch";
-	    exec($command, $return_array);
-		
-		
-		echo "Server Status: <br>";
-		$command = "pbsnodes -a";
-		exec($command, $return_array);
-		
+    $command = "../scripts/serverstatus";
+    exec($command, $return_array);
+	
+	//format return array as requested
+
 
     ?>
 <!--going to need some javascript here to display fancy graphics -->
