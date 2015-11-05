@@ -7,10 +7,22 @@
 	<p>
 
     <?php
-    $command = "../scripts/serverstatus";
-    exec($command, $return_array);
-	
-	//format return array as requested
+    	$jobID = $_GET['jobID'];
+		
+    	exec("qstat -f $jobID", $return_array);
+		
+		for ($i = 0; $i < count($return_array); $i++) {
+					echo $return_array[$i] . "<br />";
+		}
+		
+/*
+		exec("tail -100 ../database/inp_files/")
+		for ($i = 0; $i < count($return_array); $i++) {
+					echo $return_array[$i] . "<br />";
+		}		
+ */
+
+//format return array as requested
 
 
     ?>

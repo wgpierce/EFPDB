@@ -14,7 +14,7 @@ html {
     line-height: 1.4;
     font-family: sans-serif;
     width: 100%;
-    min-width: 40em;
+    min-width: 60em;
     height:100%;
     /*
      * background-color: magenta;
@@ -107,7 +107,6 @@ body {
 
 nav {
 	background-color: black;
-	color: orange;
 	height:2.5em;
 }
 
@@ -116,7 +115,7 @@ footer {
 	color: orange;
 	width: 100%;
 	min-width: 40em;
-	height:6em;   
+	height:6em;
 	/*
 	position: absolute;
 	bottom:0;
@@ -134,7 +133,7 @@ nav li, footer li {
 .sep {
 	margin: 0;
 	padding: 0;
-	color: magenta;
+	color: pink;
 	/* font-weight:bold;    */
 }
  
@@ -159,16 +158,22 @@ nav li, footer li {
 	*/
 }
 
+#main a {
+	color: purple;	
+}
+
 table, th, td {
     border: 1px solid black;
     border-collapse:collapse;
 }
 
 td {
-		text-align: center;
+	text-align: center;
 }
+
 a {
-	color: #C0C0C0;
+	/* color: #C0C0C0;   */
+	color: #C8C8C8;
 	text-decoration:none;
 }
 
@@ -183,15 +188,14 @@ a:hover {
 		color: green;*/
 }
 
-
-
-
-
-
-
-
-
-
+#custom_basis_options {
+	display: none;
+}
+#Dunning_fields, #Pople_fields {
+	display: none;
+	padding-left: 3em;
+	
+}
 
 
 

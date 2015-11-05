@@ -9,12 +9,11 @@ try:
 except ImportError:
     print "module load error!!!"
     
-def main(file_name, charge, polarization, dispersion, exrep, transfer):
-	gamess_input = xyz_to_gms_inp(file_name, charge, polarization, dispersion, exrep, transfer)	
+def main(file_name, charge, EFP_terms):
+	gamess_input = xyz_to_gms_inp(file_name, charge, EFP_terms)	
 	
-	#This is where they stopped
 	print gamess_input
 	return
 	
 if __name__ == '__main__':
-	main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+	main(sys.argv[1], sys.argv[2], sys.argv[3])

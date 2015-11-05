@@ -1,3 +1,5 @@
+<!-- The purpose of this file is to show all uploaded files and allow user to calculate -->
+
 <?php
 	//dynamically add our header and footer
 	require('../includes/head.html');
@@ -10,67 +12,51 @@
 		<?php
 		if(isset($_POST['submit'])) {
             //Upload file info and authentication
-			$target_dir = "../database/xyz_files/";
-			$target_file = $target_dir . basename($_FILES['fileToUpload']['name']);
-			$uploadOk = 1;	
-			$fileinfo = pathinfo($target_file);
-			
-			//Input parameters to be passed to EFPDB	
-			$input_charge = intval($_POST['charge']);	//Defaults to 0 if nothing set
-			
-			$input_polarization = 0;
-			$input_dispersion = 0;
-			$input_exrep = 0;
-			$input_charge_transfer = 0;
-			$input_description = $_POST['descrip'];
-			
-			if (isset($_POST['polarization'])) {
-				$input_polarization = 1;
-			}
-			if (isset($_POST['dispersion'])) {
-				$input_dispersion = 1;
-			}
-			if (isset($_POST['exrep'])) {
-				$input_exrep = 1;
-			}
-			if (isset($_POST['charge_transfer'])) {
-				$input_charge_transfer = 1;
-			}
-			
-			/*
-			 //value checking prints
-			echo "input charge: $input_charge <br>";
-			echo "input_polarization $input_polarization <br>";
-			echo "input dispersion: $input_dispersion <br>";
-			echo "input_dipsersion: $input_exrep <br>";
-			echo "input_charge_transfer: $input_charge_transfer <br>";
-			echo "extension: " . $fileinfo['extension'] . "<br>";
-			echo "input_description: $input_description<br>";
-			/**/
+            $tmp_file = $_FILES['fileToUpload']['tmp_name'];
+			$upload_name = $_FILES['fileToUpload']['name'];
+			$fileinfo = pathinfo($_FILES['fileToUpload']['name']); 
+			$target_dir = "../database/tmp_files/";
+			$target_file = $target_dir . basename($_FILES['fileToUpload']['name'], ".xyz") . ".tmp"; 
+			//TODO later: if two people upload the same names file, this will break
+			$uploadOk = TRUE;
 			
 			// Check if file size is less than 20MB
 			if ($_FILES['fileToUpload']['size'] > 20000000) {
 			    echo "Sorry, your file size cannnot exceed 20MB.<br />";
-			    $uploadOk = 0;
+			    $uploadOk = FALSE;
 			}
-	
+			
+			// Check if file name is < 255 characters
+			if (mb_strlen($upload_name) > 225) {
+				echo "This file name is too long<br>";
+				$uploadOk = FALSE;
+			}
+			
+			if (!preg_match("`^[-0-9A-Z_\.]+$`i", $upload_name)) {
+				echo "This file name has illegal characters or is empty<br>";
+				$uploadOK = FALSE;
+			}
+			
 			// Check if file is an xyz file 
 			if($fileinfo['extension'] != "xyz"){
 			    echo "The file to upload is: <br \>".basename($_FILES['fileToUpload']['name'])."<br />";
-			    echo "Sorry, only .xyz file is allowed.<br />";
-			    $uploadOk = 0;
+			    echo "Sorry, only .xyz files are allowed.<br />";
+			    $uploadOk = FALSE;
 			}
-			//Note $_FILES['fileToUpload']['name'] isn't actually a file
+			
+			//pur other safety checks like from php move-uploaded-file page
 			
 			//Now ensure that it is a proper .xyz file by obtaining its chemical formula
-			$tmp_file = $_FILES['fileToUpload']['tmp_name'];
-			//echo $tmp_file;
 			$return_array;
 			$chem_formula = exec("python ../python/create_formula.py " . escapeshellarg($tmp_file), $return_array);
+			//echo $tmp_file;
 			//$chem_formula = $return_array[0]; //temp fix
+			
 			//echo "Chemical Formula is: " . $chem_formula . "<br>";
+			//TODO: Make sure formula actually makes sense
+			
 			//check to see that we actually have a chemical formula / is nonzero
-			//if $chem_formula is 0, then all database entries will be returned - prevented above
+			//if $chem_formula is 0, then all database entries will be returned
 			if (!$chem_formula) {
 				echo "The file <br \>".basename($_FILES['fileToUpload']['name'])." is not a valid 
 						.xyz-formatted file<br>";
@@ -79,18 +65,22 @@
 			}
 			
 			if($uploadOk) {
-				//Compare to previous files and temp file since not uploaded yet 
-				/*
-				//METHOD 1 - python text database.txt manipulation
-				//echo file_get_contents($tmp_file);
-				$file_exists = exec("python ../python/file_exists.py " . escapeshellarg($tmp_file), $return_array);
-				*/
+				if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $target_file)) {
+					echo "File Uploaded to tmp<br>";
+				}
+				
+				//Compare to previous files
+				echo "The molecule is $chem_formula.<br>";
+				echo "<p style='font-size: 2em'>Select the file you wish to use and options for it:</p>";
+				echo '<form action="run_GAMESS.php" method="POST" enctype="multipart/form-data">';
+							
+				echo '<input type="radio" name="select_mol" value="' . basename($target_file) . '" checked>Current file you have uploaded<br>
+				<label>Write a description about this file:<br>
+				<textarea name="descrip" rows="2" cols="40" maxlength="250" placeholder="Type your description here!"></textarea></label> <br />';
+				echo "<p style='font-size:2em; color:magenta'><string>OR<string><p>";
 				
 				//METHOD 2 - mySQL Database querying - much better
-				//TODO: port python code to php
-				$file_exists = FALSE;
-				$existing_file_name = "";
-				$non_existing_occurance=0;
+				$non_existing_occurrence=0;
 				
 				//Database queries - secured with environmental variables and against injection
 				$conn = new mysqli(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), 
@@ -100,94 +90,161 @@
 					die("Connection failed: " . $conn->connect_error);
 				}
 				
-				//Identify molecules with the same chemical structure and run the rms python script on them
-				$mysql_query = $conn->prepare("SELECT Occurance,Geometry,InputFile FROM main WHERE Molecule=?");
+				
+				
+				
+				//Identify molecules with the same chemical structure and run the rmsd python script on them
+				$mysql_query = $conn->prepare("SELECT Occurance, Description, EFPterms, BasisSet, Geometry, Fragment FROM main WHERE Molecule=?");
 				$mysql_query->bind_param('s', $chem_formula);
 				
+				
 				if($mysql_query->execute()) {
-					$mysql_query->bind_result($curr_occurance, $curr_geometry, $curr_inp_file);
+					$mysql_query->bind_result($curr_occurance, $curr_description, $curr_EFP_terms, $curr_basis_set, $curr_geometry, $curr_fragment);
+					echo "Existing files with RMSD < .5:<br>";
+						echo "<table style=\"width:100%\">
+							<tr>
+								<th>Use this?</th>
+								<th>RMSD Similarity</th>
+								<th>Occurance</th>
+								<th>Polarization/Dispersion/Charge Transfer/Ex-Rep</th>
+								<th>Basis Set</th>
+								<th>Geometry</th>
+								<th>Fragment</th>
+								<th>Description</th>
+							</tr>";
 					//convert results from query
 					while($row = $mysql_query->fetch()) {
-						//echo $curr_fragment;
-						//echo $curr_geometry;
-						$non_existing_occurance = $curr_occurance; //keep this in case we find it doesn't exist at the end
-						$rmsd_similarity = exec("python ../python/rmsd.py " . escapeshellarg($tmp_file) . " ../database/xyz_files/" . $curr_geometry, $return_array);
+						$non_existing_occurrence = $curr_occurance;
+						$rmsd_similarity = exec("python ../python/rmsd.py " . escapeshellarg($target_file) . " ../database/xyz_files/" . $curr_geometry, $return_array);
+						//echo "RMSD: $rmsd_similarity<br>";
+						//echo "Curr_geometry: $curr_geometry<br>";
 						//$rmsd_similarity = "5e-5";
 						if($rmsd_similarity < .5) { ///this does properly interpret e notation output
-							echo "The RMSD similarity of ".basename($_FILES['fileToUpload']['name'])." is $rmsd_similarity to a similar geometry, given below<br>";
-							$existing_inp_name = $curr_inp_file;
-							$file_exists=TRUE;		
-							break;
+							echo "
+								<tr>
+									<td><input type='radio' name='select_mol' value='$curr_geometry'></td>
+									<td>$rmsd_similarity</td>
+									<td>$curr_occurance</td>
+									<td>$curr_EFP_terms</td>
+									<td>$curr_basis_set</td>
+									<td><a href = 'view_mol.php?select_mol=$curr_geometry'>$curr_geometry</a></td>
+									<td><a href = 'view_mol.php?select_mol=$curr_fragment'>$curr_fragment</a></td>
+									<td>$curr_description</td>
+								 </tr>";	
 						}
-						$file_exists=FALSE;	
 					}
-					$non_existing_occurance += 1;
-					
+					echo "</table>";
+					if($non_existing_occurrence == 0) {
+						echo "There are no already existing molecules of this file.<br>";
+					}
+					$non_existing_occurrence += 1;
+						
 				} else {
 					//else the query fails, not necessarily file doesn't exist
 					echo "Failed query with database";
 					$file_exists=FALSE;
 				}
 				$mysql_query->close();
+				$conn->close();
 				
-				/*
-				echo "File exists: " . $file_exists . "<br>";
-				echo "Existing file: " . $existing_file_name . "<br>";
-				*/
+				
 				/*
 				for ($i = 0; $i < count($return_array); $i++) {
 					echo $return_array[$i] . "<br />";
 				}
 				*/
 				
-				//$file_exists = TRUE;
-
-				if($file_exists) {
-					#$existing_file_name = basename($_FILES['fileToUpload']['name'], ".xyz") . ".efp";
-					//echo "This file already exists <a href=\"../database/efp_files/$existing_file_name\">here!</a>";
-					echo "This file already exists <a href=\"mol_info.php?select_mol=$existing_inp_name\">here!</a>";
+				/*	*/					
+				
+				//crete an invisible filed to store the non_existing_occurrance
+				echo "<input type='hidden' name='non_existing_occurrence' value='$non_existing_occurrence'";
+				echo "<input type='hidden' name='chem_formula' value='$chem_formula'";
+				
+				echo '
+				<br><br>
+				<p>Charges: (between -20 and 20): </p>
+				    <p><input type="number" name="charge" min="-20" max="20" value ="charge"></p>
+				    <br />
+				    <p>Click on the buttons corresponding to the calculations you want:</p>
+					<label><input type="radio" name="EFP_terms" value="EP" checked>Electrostatics and Polarization</label><br>
+					<label><input type="radio" name="EFP_terms" value="EPD">Electrostatics and Polarization, and Dispersion</label><br>
+					<label><input type="radio" name="EFP_terms" value="EPDCE">All five EFP Terms</label><br><br>
+			
+					<!--Advanced Options-->
+			
+					<label><input type="checkbox" id="custom_basis" name="custom_basis" value="yes">Use Custom Basis Set</label><br />
 					
-				} else if ($file_exists == FALSE){
-					//to disallow files from being names the same thing
-					$target_file = $target_dir . basename($_FILES['fileToUpload']['name'], ".xyz") . $non_existing_occurance . ".xyz";
-					if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $target_file)) {
-						//Everthing has succeeded and the file does not exist, we allow user to calculate now
-						
-						//Create inp file since it has been uploaded, TODO: translate to php
-						//return is a basename, pass other args here to input	
-						$gamess_input = exec("python ../python/create_inp.py " . escapeshellarg($target_file) . " "
-												. escapeshellarg($input_charge) . " ". escapeshellarg($input_polarization) . " "
-												. escapeshellarg($input_dispersion) . " ". escapeshellarg($input_exrep) . " "
-												. escapeshellarg($input_charge_transfer), $return_array);
-
-/**/						
-						//create new database entry
-						$mysql_query = $conn->prepare("INSERT INTO main
-								   (Occurance, Description, Molecule, Geometry, InputFile, isRunning)
-								   VALUES (?, ?, ?, ?, ?, ?)");
-						$is_runnning = '0';
-						$mysql_query->bind_param('isssss', $non_existing_occurance, $input_description, $chem_formula, basename($target_file), $gamess_input, $is_runnning);
-						
-						if($mysql_query->execute()) {
-				        	echo "The file ". basename($target_file) . " has been uploaded.<br />";
-							echo "Press the link below to submit your file to be processed by GAMESS<br />";
-							//We pass variables by GET to allow multiuser access and bookmarking of the job
-							//other paramters passable here as well
-							echo "<a href = \"run_GAMESS.php?gamess_input=$gamess_input\" style=\"font-size: 3em\">
-									Calculate EFP!<a><br />";
-						} else {
-						 echo "There was trouble putting ". basename($target_file) . " into the database, but it has
-								been uploaded.<br>";
-						}
-/*	*/					
-							    	
-					} else {
-			        	echo "Sorry, this file doesn't exist, but there was a problem uploading your file";
-			    	}
-				}
-				 $conn->close();
+					<fieldset id="custom_basis_options">
+						<label><input type="radio" id="Dunning" name="basis_set_type" value="Dunning" checked>Dunning</label><br>
+						<fieldset id="Dunning_fields">
+							
+							<label>Aug
+							<select name="Aug">
+								<option value="ACC" checked>Yes</option>
+								<option value="CC">No</option>
+							</select></label>
+							<br>
+							<label>Zetas
+							<select name="D_Zetas">
+								<option value="D" checked>cc-pVDZ</option>
+								<option value="T">cc-pVTZ</option>
+								<option value="Q">cc-pVQZ</option>
+								<option value="5-pVDZ">cc-pV5Z</option>
+							</select></label>
+						</fieldset>
+						<label><input type="radio" id="Pople" name="basis_set_type" value="Pople">Pople</label><br>
+						<fieldset id="Pople_fields">
+							<label>Zetas
+							<select name="P_Zetas">
+								<option value="N31" checked>Double</option>
+								<option value="N311">Triple</option>
+							</select></label>
+							<br>
+							<label>Diffuse
+							<select name="Diffuse">
+								<option value="Yes(++)" checked>Yes(++)</option>
+								<option value="Yes(+)">Yes(+)</option>
+								<option value="No">No</option>
+							</select></label>
+							<br>
+							Pol. Functions:<br>
+							<label>d
+							<select name="d">
+								<option value="0" checked>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+							</select></label>
+							<label>p
+							<select name="p">
+								<option value="0" checked>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+							</select></label>
+							<label>f
+							<select name="f">
+								<option value="0" checked>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+							</select></label>							
+						</fieldset>
+					</fieldset>
+					<!--End Advanced Options-->
+			
+					<br>
+					<br>
+					<br>
+				    <input type="submit" value="Calculate EFP!" name="submit">
+			
+			    </form>
+				<br>';
+				
+				//TODO: Make widgit to show current basis set
+				
+				
 			} else {
-			    echo "Sorry, your file was not accepted or uploaded.<br />";
+			    echo "Sorry, the file $upload_name was not accepted or uploaded.<br />";
 			}
 		}
 		?>
