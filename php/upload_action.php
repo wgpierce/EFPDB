@@ -53,7 +53,7 @@
 			//$chem_formula = $return_array[0]; //temp fix
 			
 			//echo "Chemical Formula is: " . $chem_formula . "<br>";
-			//TODO: Make sure formula actually makes sense
+			//TODO: Make sure formula actually makes sense - make regexp to check form
 			
 			//check to see that we actually have a chemical formula / is nonzero
 			//if $chem_formula is 0, then all database entries will be returned
@@ -157,8 +157,8 @@
 				/*	*/					
 				
 				//crete an invisible filed to store the non_existing_occurrance
-				echo "<input type='hidden' name='non_existing_occurrence' value='$non_existing_occurrence'";
-				echo "<input type='hidden' name='chem_formula' value='$chem_formula'";
+				echo "<input type='hidden' name='non_existing_occurrence' value='$non_existing_occurrence'>";
+				echo "<input type='hidden' name='chem_formula' value='$chem_formula'>";
 				
 				echo '
 				<br><br>
@@ -201,7 +201,7 @@
 							</select></label>
 							<br>
 							<label>Diffuse
-							<select name="Diffuse">
+							<select name="diffuse">
 								<option value="Yes(++)" checked>Yes(++)</option>
 								<option value="Yes(+)">Yes(+)</option>
 								<option value="No">No</option>

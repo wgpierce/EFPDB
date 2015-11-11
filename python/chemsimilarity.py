@@ -63,7 +63,7 @@ def file_exists(string, databasefile):
 			return True
 	return False
 
-def xyz_to_gms_inp(XYZFile, charge, EFP_terms, basis_args):
+def xyz_to_gms_inp(XYZFile, charge, EFP_terms, basis_args, basis_set):
 	g = open(XYZFile, 'r')
 	lines = g.readlines()
 	#randvar = str(random.randint(0,1000000))
@@ -89,7 +89,7 @@ def xyz_to_gms_inp(XYZFile, charge, EFP_terms, basis_args):
 		exrep_g ='t';
 		
 	#redirect from the PHP files to website local filesystems
-	gamess_input =  '../database/gamess_inp_files/' + os.path.splitext(os.path.basename(XYZFile))[0] + '.inp'
+	gamess_input =  '../database/gamess_inp_files/' + os.path.splitext(os.path.basename(XYZFile))[0] + basis_set + '.inp'
 	f = open(gamess_input, 'w')
 	cc = []
 	for line in lines[2:]:

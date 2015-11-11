@@ -191,10 +191,14 @@ a:hover {
 #custom_basis_options {
 	display: none;
 }
-#Dunning_fields, #Pople_fields {
-	display: none;
+#Dunning_fields {
+	display: block;
 	padding-left: 3em;
-	
+}
+
+#Pople_fields {
+	display: none;
+	padding-left: 3em;	
 }
 
 

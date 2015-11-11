@@ -17,6 +17,7 @@
 			$non_existing_occurrence = $_POST['non_existing_occurrence'];
 			$EFP_terms = $_POST['EFP_terms'];
 			$basis_set = '6-31G';
+			$basis_set_name = $basis_set;  //for use in the file name
 			$basis_args = 'NGAUSS=6 GBASIS=N31';
 			//$_POST['basis_set'];
 			$return_jobID;
@@ -24,7 +25,7 @@
 			//generate basis set
 			if(isset($_POST['custom_basis'])) {
 				$basis_set = '';
-				echo $_POST['basis_set_type'];
+
 				if($_POST['basis_set_type'] == 'Dunning') {
 					
 					if($_POST['Aug'] == 'ACC') {
@@ -32,21 +33,22 @@
 					}
 					$basis_set = $basis_set . "cc-pV" . $_POST['D_Zetas'] . "Z";
 					$basis_args = 'GBASIS=' . $_POST['Aug'] . $_POST['D_Zetas'];
-					
+					$basis_set_name = $basis_set;
 				} else if($_POST['basis_set_type'] == 'Pople') {
 					//Gauss and Zetas
-					$basis_args = " NGAUSS=6 " . $_POST['P_Zetas'] . ' ';
+					$basis_args = " NGAUSS=6 " . "GBASIS=" . $_POST['P_Zetas'] . ' ';
 					$basis_set = "6-" . $_POST['P_Zetas'];
 					
 					//Diffuse
 					if($_POST['diffuse'] == "Yes(++)") {
 						$basis_set = $basis_set . '++'; 
-						$basis_args = $basis_set . 'DIFFSP=.t. DIFFS=.t. ';
+						$basis_args = $basis_args . 'DIFFSP=.t. DIFFS=.t. ';
 					} else if($_POST['diffuse'] == "Yes(+)") {
 						$basis_set = $basis_set . '+';
-						$basis_args = $basis_set . 'DIFSP=.t. ';
+						$basis_args = $basis_args . 'DIFSP=.t. ';
 					}
 					$basis_set = $basis_set . 'G';
+					$basis_set_name = $basis_set;
 					
 					//Pol. functions
 					//TODO: Fix ordering?
@@ -54,22 +56,31 @@
 						$basis_set = $basis_set . '('; 
 						if($_POST['d'] > 0) {
 							$basis_set = $basis_set . $_POST['d'] . 'd';
-							$basis_args = $basis_set . 'NDFUNC=' . $_POST['d'] . ' ';
+							$basis_set_name = $basis_set_name . $_POST['d'] . 'd'; 
+							$basis_args = $basis_args . 'NDFUNC=' . $_POST['d'] . ' ';
+							if($_POST['p'] > 0 || $_POST['f'] > 0) {
+								$basis_set = $basis_set . ',';
+							}
 						}
 					 	if($_POST['p'] > 0) {
-							$basis_set = $basis_set . $_POST['p'] . 'p'; 
-							$basis_args = $basis_set . 'NPFUNC=' . $_POST['p']. ' ';
+							$basis_set = $basis_set . $_POST['p'] . 'p';
+							$basis_set_name = $basis_set_name . $_POST['p'] . 'p'; 
+							$basis_args = $basis_args . 'NPFUNC=' . $_POST['p']. ' ';
+							if($_POST['f'] > 0) {
+								$basis_set = $basis_set . ',';
+							}
 						}
 						if($_POST['f'] > 0) {
 							$basis_set = $basis_set . $_POST['f'] . 'f';
-							$basis_args = $basis_set . 'NFFUNC=' . $_POST['f'] . ' ';
+							$basis_set_name = $basis_set_name . $_POST['f'] . 'f';
+							$basis_args = $basis_args . 'NFFUNC=' . $_POST['f'] . ' ';
 						}
 						$basis_set = $basis_set . ').';
-					
 					}
 				}
 
 				echo "Basis set: $basis_set<br>";
+				echo "Basis set name: $basis_set_name<br>";
 				echo "Basis_args: $basis_args<br>";
 			}
 
@@ -87,7 +98,7 @@
 				//move into main xyz folder
 				rename("../database/tmp_files/" . $_POST['select_mol'], $target_file);
 			} else { //else it already exists
-				$target_file = $target-dir . $_POST['select_mol'];
+				$target_file = $target_dir . $_POST['select_mol'];
 			}
 
 
@@ -124,7 +135,7 @@
 					}
 				}
 			} else {
-				echo "Previous Records query failed";
+				echo "Previous records query failed";
 			}
 
 	 		if (!$job_already_exists) {
@@ -133,11 +144,12 @@
 								echo "Hello!";		
 				/*
 				$gamess_input = exec("python ../python/create_inp.py " . escapeshellarg($target_file) . " "
-					. escapeshellarg($input_charge) . " $EFP_terms" . " $basis_args");
+					. escapeshellarg($input_charge) . " $EFP_terms " . escapeshellarg($basis_args) . " " . 
+						escapeshellarg('_' . $basis_set_name));
 				
 				//And execute GAMESS!!!!!
 				$return_jobID = exec("./../scripts/submissionscript $gamess_input", $return_array);
-				echo "$return_jobID <br>";
+				echo "JobID: $return_jobID <br>";
 				*/
 				/*				 
 				//create new database entry

@@ -7,7 +7,8 @@ archive
 otherDefaults
 .jshintrc
 otherFiles
-src/database
-
+database
 browserconfig.xml
 crossdomain.xml
+scripts/meow.script
+scripts/submissionscript
