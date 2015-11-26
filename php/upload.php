@@ -12,7 +12,7 @@
 	    <input type="submit" value="Submit" name="submit">
     </form>
 	<br>
-	<!--Hyperlink to the corrdinates changing site-->   
+	<!--Hyperlink to the coordinates changing site-->   
 	<p>If your file is not in xyz coordinates, <a href="http://www.webqc.org/molecularformatsconverter.php">click here</a>
 		 to convert its geometry to xyz format
 	</p>

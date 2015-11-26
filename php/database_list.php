@@ -12,7 +12,7 @@
 			echo "Failed connection with database";
 			die("Connection failed: " . $conn->connect_error);
 		}
-		
+//TODO: here		
 		$mysql_query = $conn->prepare("SELECT Occurance, Description, Attributes, BasisSet, Geometry, Fragment FROM main");
 		
 		if($mysql_query->execute()) {

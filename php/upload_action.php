@@ -1,5 +1,6 @@
 <!-- The purpose of this file is to show all uploaded files and allow user to calculate -->
 
+
 <?php
 	//dynamically add our header and footer
 	require('../includes/head.html');
@@ -10,6 +11,8 @@
 	<br />
 	<p>
 		<?php
+//TODO: put in field for email to be sent when job is complete? 
+		
 		if(isset($_POST['submit'])) {
             //Upload file info and authentication
             $tmp_file = $_FILES['fileToUpload']['tmp_name'];
@@ -17,8 +20,9 @@
 			$fileinfo = pathinfo($_FILES['fileToUpload']['name']); 
 			$target_dir = "../database/tmp_files/";
 			$target_file = $target_dir . basename($_FILES['fileToUpload']['name'], ".xyz") . ".tmp"; 
-			//TODO later: if two people upload the same names file, this will break
+			//TODO later: if two people upload the same names file (before submitting job), this will break
 			$uploadOk = TRUE;
+			$non_existing_occurrence = 0;
 			
 			// Check if file size is less than 20MB
 			if ($_FILES['fileToUpload']['size'] > 20000000) {
@@ -44,14 +48,13 @@
 			    $uploadOk = FALSE;
 			}
 			
-			//pur other safety checks like from php move-uploaded-file page
+			//put other safety checks like from php move-uploaded-file page
 			
 			//Now ensure that it is a proper .xyz file by obtaining its chemical formula
 			$return_array;
-			$chem_formula = exec("python ../python/create_formula.py " . escapeshellarg($tmp_file), $return_array);
+			$chem_formula = exec("python ../python/create_formula.py " . escapeshellarg($tmp_file));
 			//echo $tmp_file;
 			//$chem_formula = $return_array[0]; //temp fix
-			
 			//echo "Chemical Formula is: " . $chem_formula . "<br>";
 			//TODO: Make sure formula actually makes sense - make regexp to check form
 			
@@ -79,9 +82,6 @@
 				<textarea name="descrip" rows="2" cols="40" maxlength="250" placeholder="Type your description here!"></textarea></label> <br />';
 				echo "<p style='font-size:2em; color:magenta'><string>OR<string><p>";
 				
-				//METHOD 2 - mySQL Database querying - much better
-				$non_existing_occurrence=0;
-				
 				//Database queries - secured with environmental variables and against injection
 				$conn = new mysqli(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), 
 										getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
@@ -89,9 +89,6 @@
 					echo "Failed connection with database";
 					die("Connection failed: " . $conn->connect_error);
 				}
-				
-				
-				
 				
 				//Identify molecules with the same chemical structure and run the rmsd python script on them
 				$mysql_query = $conn->prepare("SELECT Occurance, Description, EFPterms, BasisSet, Geometry, Fragment FROM main WHERE Molecule=?");
@@ -115,10 +112,10 @@
 					//convert results from query
 					while($row = $mysql_query->fetch()) {
 						$non_existing_occurrence = $curr_occurance;
-						$rmsd_similarity = exec("python ../python/rmsd.py " . escapeshellarg($target_file) . " ../database/xyz_files/" . $curr_geometry, $return_array);
+						
+						$rmsd_similarity = exec("python ../python/rmsd.py " . escapeshellarg($target_file) . " ../database/xyz_files/" . $curr_geometry);
 						//echo "RMSD: $rmsd_similarity<br>";
 						//echo "Curr_geometry: $curr_geometry<br>";
-						//$rmsd_similarity = "5e-5";
 						if($rmsd_similarity < .5) { ///this does properly interpret e notation output
 							echo "
 								<tr>
@@ -134,6 +131,7 @@
 						}
 					}
 					echo "</table>";
+					
 					if($non_existing_occurrence == 0) {
 						echo "There are no already existing molecules of this file.<br>";
 					}
@@ -153,8 +151,6 @@
 					echo $return_array[$i] . "<br />";
 				}
 				*/
-				
-				/*	*/					
 				
 				//crete an invisible filed to store the non_existing_occurrance
 				echo "<input type='hidden' name='non_existing_occurrence' value='$non_existing_occurrence'>";

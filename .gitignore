@@ -10,5 +10,5 @@ otherFiles
 database
 browserconfig.xml
 crossdomain.xml
-scripts/meow.script
 scripts/submissionscript
+database

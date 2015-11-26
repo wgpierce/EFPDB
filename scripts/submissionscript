@@ -4,7 +4,7 @@ INPFILE=$1
 
 target_file=/var/www/html/EFPDB/database/qsub_inp/$INPFILE.script
 
-#overwrite any previous by the same name
+#overwrite any previous .inp file by the same name
 echo '#!/bin/csh' > $target_file
 chmod 755 $target_file
 
@@ -15,10 +15,11 @@ echo "#PBS -r n" >> $target_file
 echo "#PBS -j oe" >> $target_file
 echo "#PBS -o $INPFILE.stdout" >> $target_file
 echo "#PBS -N $INPFILE" >> $target_file
-
 echo "chdir /var/www/html/EFPDB/database/gamess_inp_files" >> $target_file
-
-#Thr final command to execute GAMESS
 echo "/software/gamess/rungms $INPFILE 00 1 >& ../log_files/$INPFILE.log" >> $target_file
 
-qsub $target_file
+echo "php -f /var/www/html/EFPDB/php/job_complete.php" >> $target_file
+
+#The final command to execute qsub submission - run as efpdb-user
+sudo -u efpdb-user qsub $target_file
+
