@@ -3,9 +3,9 @@
 	require('../includes/head.html');
 	require('../includes/header.html'); 
 ?>
-<div id="main">
+<div id="site_content">
 	<!-- Upload PHP content -->
-	<p style="font-size: 30px">Upload your file</p>
+	<p class="emph">Upload your file</p>
     <form action="upload_action.php" method="POST" enctype="multipart/form-data">
 	    <p>Select file to upload:</p>
 	    <input type="file" name="fileToUpload" id="fileToUpload">
@@ -19,7 +19,9 @@
 	<p>If you are having trouble uploading your file, <a href="http://en.wikipedia.org/wiki/EXY_file_format#Example">click here</a>
 		to see an example of a correctly formatted xyz file
 	</p>
-	
+	<p>If you are looking to upload proteins with our system, <a href="http://bioefp.org">click here</a>
+		to go to our other site
+	</p>
 	
 </div>
 

@@ -136,7 +136,10 @@ nav li, footer li {
 	color: pink;
 	/* font-weight:bold;    */
 }
- 
+
+.emph {
+	font-size: 30px;
+}
 
 #header {
 	/* Do whatever we want with the header here */

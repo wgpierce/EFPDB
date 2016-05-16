@@ -1,9 +1,17 @@
-//We can put plenty of fancier animations in this document
-
-//NCLICK="TOGGLE(\'CUSTOM_BASIS_OPTIONS\', THIS)"
 
 var main = function() {
-	//if(parent.frames.length != 0) top.location=location.pathname.substring(1);
+
+	//Update the current menu item
+	var z = location.pathname.substring(location.pathname.lastIndexOf('/')+1);
+	if (z == 'upload_action.php' || z == 'run_GAMESS.php') z = 'upload.php';
+	if (z == 'view_mol.php') z = 'database_list.php';
+	var element = z ? document.getElementById(z) : document.getElementById('index.php'); //JQuery refuses to work here
+	
+	element.classList.add('selected');
+	
+		
+	
+//toggle showing options on the jobs submission screen
 	$('#custom_basis').click(function() {
 		console.log('clicked!');
 		if($(this).is(':checked')) {
@@ -25,6 +33,7 @@ var main = function() {
 			$('#Pople_fields').hide();
 		}
 	});
+
 };
 
 $(document).ready(main);

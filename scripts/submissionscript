@@ -1,22 +1,32 @@
 #!/bin/bash
 
 INPFILE=$1
-
+LOGFILE=../log_files/$INPFILE.log
+OUTFILE=../out_files/$INPFILE.stdout
 target_file=/var/www/html/EFPDB/database/qsub_inp/$INPFILE.script
+base=`basename -s .inp $INPFILE`
+efp_ext=.efp
+efp=$base$efp_ext
+dat_ext=.dat
+dat=$base$dat_ext
 
 #overwrite any previous .inp file by the same name
-echo '#!/bin/csh' > $target_file
-chmod 755 $target_file
+echo '#!/bin/bash' > $target_file
+chmod 775 $target_file
 
 echo '#PBS -q batch' >> $target_file
 echo '#PBS -l nodes=1:ppn=1' >> $target_file
 echo '#PBS -l walltime=300:00:00' >> $target_file
 echo "#PBS -r n" >> $target_file
 echo "#PBS -j oe" >> $target_file
-echo "#PBS -o $INPFILE.stdout" >> $target_file
+echo "#PBS -o $OUTFILE" >> $target_file
 echo "#PBS -N $INPFILE" >> $target_file
-echo "chdir /var/www/html/EFPDB/database/gamess_inp_files" >> $target_file
-echo "/software/gamess/rungms $INPFILE 00 1 >& ../log_files/$INPFILE.log" >> $target_file
+
+echo "cd /var/www/html/EFPDB/database/gamess_inp_files" >> $target_file
+echo "/software/gamess/rungms $INPFILE 00 1 >& $LOGFILE" >> $target_file
+
+echo "chmod 775 /var/www/html/EFPDB/database/efp_files/$efp" >> $target_file
+echo "chmod 775 /var/www/html/EFPDB/database/efp_files/$dat" >> $target_file
 
 echo "php -f /var/www/html/EFPDB/php/job_complete.php" >> $target_file
 
