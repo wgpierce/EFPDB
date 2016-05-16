@@ -10,10 +10,10 @@
 		
 		$conn = makeConn();
 		
-		$mysql_query = $conn->prepare("SELECT Occurrence, Description, Molecule, EFPterms, BasisSet, Geometry, Fragment FROM main");
+		$mysql_query = $conn->prepare("SELECT Occurrence, Description, Molecule, EFPterms, BasisSet, Geometry, Geometry_Hash, Fragment FROM main");
 		
 		if($mysql_query->execute()) {
-			$mysql_query->bind_result($curr_occurrence, $curr_description, $curr_mol, $curr_efp_terms, $curr_basis_set, $curr_geometry, $curr_fragment);
+			$mysql_query->bind_result($curr_occurrence, $curr_description, $curr_mol, $curr_efp_terms, $curr_basis_set, $curr_geometry, $curr_geometry_hash, $curr_fragment);
 				echo "<table style='width:100%\'>
 					<tr>
 						<th>Occurrence</th>
@@ -32,8 +32,8 @@
 							<td>$curr_mol</td>
 							<td>$curr_efp_terms</td>
 							<td>$curr_basis_set</td>
-							<td><a href = 'view_mol.php?select_mol=$curr_geometry'>$curr_geometry</a></td>
-							<td><a href = 'view_mol.php?select_mol=$curr_fragment'>$curr_fragment</a></td>
+							<td><a href = 'view_mol.php?select_mol=$curr_geometry_hash'>$curr_geometry</a></td>
+							<td><a href = 'view_mol.php?select_mol=$curr_fragment'>Fragment</a></td>
 							<td>$curr_description</td>
 						 </tr>";
 			}
